@@ -6,6 +6,7 @@ export function Events() {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddAttendee, setShowAddAttendee] = useState(false);
+  const [showQuickMenu, setShowQuickMenu] = useState<string | null>(null);
 
   // Mock events data
   const events = [
@@ -62,20 +63,20 @@ export function Events() {
     { id: '3', name: 'Sipho', surname: 'Ndlovu', phone: '+27123456791', cellGroup: 'Men Fellowship', isFirstTimer: false, present: true },
     { id: '4', name: 'Amahle', surname: 'Zungu', phone: '+27123456809', cellGroup: null, isFirstTimer: true, present: true },
     { id: '5', name: 'Zanele', surname: 'Khumalo', phone: '+27123456792', cellGroup: 'Women Fellowship', isFirstTimer: false, present: true },
-    { id: '6', name: 'Mandla', surname: 'Mokoena', phone: '+27123456793', cellGroup: 'Youth', isFirstTimer: false, present: true },
+    { id: '6', name: 'Mandla', surname: 'Mokoena', phone: '+27123456793', cellGroup: 'Youth', isFirstTimer: false, present: false },
     { id: '7', name: 'Precious', surname: 'Mahlangu', phone: '+27123456794', cellGroup: 'Worship Team', isFirstTimer: false, present: true },
-    { id: '8', name: 'Bongani', surname: 'Sithole', phone: '+27123456795', cellGroup: 'Events Team', isFirstTimer: false, present: true },
+    { id: '8', name: 'Bongani', surname: 'Sithole', phone: '+27123456795', cellGroup: 'Events Team', isFirstTimer: false, present: false },
     { id: '9', name: 'Themba', surname: 'Zulu', phone: '+27123456796', cellGroup: 'Men Fellowship', isFirstTimer: false, present: true },
     { id: '10', name: 'Nomthandazo', surname: 'Ngcobo', phone: '+27123456798', cellGroup: 'Women Fellowship', isFirstTimer: false, present: true },
-    { id: '11', name: 'Sibongile', surname: 'Radebe', phone: '+27123456799', cellGroup: 'Women Fellowship', isFirstTimer: false, present: true },
+    { id: '11', name: 'Sibongile', surname: 'Radebe', phone: '+27123456799', cellGroup: 'Women Fellowship', isFirstTimer: false, present: false },
     { id: '12', name: 'Thandiwe', surname: 'Cele', phone: '+27123456800', cellGroup: 'Young Adults', isFirstTimer: false, present: true },
     { id: '13', name: 'Nkosana', surname: 'Mbeki', phone: '+27123456801', cellGroup: 'Youth', isFirstTimer: false, present: true },
-    { id: '14', name: 'Lerato', surname: 'Molefe', phone: '+27123456802', cellGroup: 'Young Adults', isFirstTimer: false, present: true },
+    { id: '14', name: 'Lerato', surname: 'Molefe', phone: '+27123456802', cellGroup: 'Young Adults', isFirstTimer: false, present: false },
     { id: '15', name: 'Naledi', surname: 'Mokwena', phone: '+27123456804', cellGroup: 'Worship Team', isFirstTimer: false, present: true },
     { id: '16', name: 'Busisiwe', surname: 'Nkomo', phone: '+27123456806', cellGroup: 'Cell Group A', isFirstTimer: false, present: true },
-    { id: '17', name: 'Sizani', surname: 'Mthethwa', phone: '+27123456807', cellGroup: 'Cell Group B', isFirstTimer: false, present: true },
+    { id: '17', name: 'Sizani', surname: 'Mthethwa', phone: '+27123456807', cellGroup: 'Cell Group B', isFirstTimer: false, present: false },
     { id: '18', name: 'Lwazi', surname: 'Maseko', phone: '+27123456810', cellGroup: null, isFirstTimer: true, present: true },
-    { id: '19', name: 'Nosipho', surname: 'Gumede', phone: '+27123456811', cellGroup: null, isFirstTimer: true, present: true },
+    { id: '19', name: 'Nosipho', surname: 'Gumede', phone: '+27123456811', cellGroup: null, isFirstTimer: true, present: false },
     { id: '20', name: 'Kagiso', surname: 'Lekota', phone: '+27123456805', cellGroup: 'Worship Team', isFirstTimer: false, present: true },
   ];
 
@@ -114,6 +115,24 @@ export function Events() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const toggleAttendance = (attendeeId: string) => {
+    // In a real app, this would update the database
+    console.log(`Toggling attendance for attendee ${attendeeId}`);
+    setShowQuickMenu(null);
+  };
+
+  const markAsAbsent = (attendeeId: string) => {
+    // In a real app, this would update the database
+    console.log(`Marking attendee ${attendeeId} as absent`);
+    setShowQuickMenu(null);
+  };
+
+  const editAttendee = (attendeeId: string) => {
+    // In a real app, this would open edit modal
+    console.log(`Editing attendee ${attendeeId}`);
+    setShowQuickMenu(null);
   };
 
   if (selectedEvent) {
@@ -209,9 +228,13 @@ export function Events() {
                 </div>
               ) : (
                 filteredAttendees.map((attendee) => (
-                <div key={attendee.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div key={attendee.id} className="relative flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    {attendee.present ? (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                    )}
                     <div>
                       <p className="font-medium text-gray-900">{attendee.name} {attendee.surname}</p>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -225,8 +248,12 @@ export function Events() {
                             First Timer
                           </span>
                         )}
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                          Present
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          attendee.present 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {attendee.present ? 'Present' : 'Absent'}
                         </span>
                       </div>
                     </div>
@@ -240,11 +267,58 @@ export function Events() {
                         📞 Call
                       </button>
                     )}
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button 
+                      onClick={() => setShowQuickMenu(showQuickMenu === attendee.id ? null : attendee.id)}
+                      className="text-gray-400 hover:text-gray-600 relative"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                       </svg>
                     </button>
+                    
+                    {/* Quick Menu Dropdown */}
+                    {showQuickMenu === attendee.id && (
+                      <div className="absolute right-0 top-12 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                        <div className="py-1">
+                          <button
+                            onClick={() => toggleAttendance(attendee.id)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            {attendee.present ? (
+                              <>
+                                <div className="w-4 h-4 rounded-full border-2 border-gray-400 mr-3"></div>
+                                Mark as Absent
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-4 h-4 text-green-600 mr-3" />
+                                Mark as Present
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => editAttendee(attendee.id)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit Details
+                          </button>
+                          {attendee.isFirstTimer && (
+                            <button
+                              onClick={() => window.open(`tel:${attendee.phone}`)}
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              Call Now
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 ))
@@ -252,6 +326,14 @@ export function Events() {
             </div>
           </div>
         </div>
+
+        {/* Click outside to close menu */}
+        {showQuickMenu && (
+          <div 
+            className="fixed inset-0 z-5" 
+            onClick={() => setShowQuickMenu(null)}
+          ></div>
+        )}
 
         {/* Add Attendee Modal */}
         {showAddAttendee && (
