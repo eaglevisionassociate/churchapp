@@ -9,7 +9,7 @@ export function Events() {
   const [showQuickMenu, setShowQuickMenu] = useState<string | null>(null);
 
   // Mock events data
-  const events = [
+  const [events, setEvents] = useState([
     {
       id: '1',
       title: 'Sunday Morning Service',
@@ -54,10 +54,10 @@ export function Events() {
       attendees: 45,
       status: 'upcoming',
     },
-  ];
+  ]);
 
-  // Mock attendees data for the selected event
-  const mockAttendees = [
+  // Mock attendees data for events
+  const [mockAttendees, setMockAttendees] = useState([
     { id: '1', name: 'Thabo', surname: 'Mthembu', phone: '+27123456789', cellGroup: 'Leadership', isFirstTimer: false, present: true },
     { id: '2', name: 'Nomsa', surname: 'Dlamini', phone: '+27123456790', cellGroup: 'Leadership', isFirstTimer: false, present: true },
     { id: '3', name: 'Sipho', surname: 'Ndlovu', phone: '+27123456791', cellGroup: 'Men Fellowship', isFirstTimer: false, present: true },
@@ -78,7 +78,7 @@ export function Events() {
     { id: '18', name: 'Lwazi', surname: 'Maseko', phone: '+27123456810', cellGroup: null, isFirstTimer: true, present: true },
     { id: '19', name: 'Nosipho', surname: 'Gumede', phone: '+27123456811', cellGroup: null, isFirstTimer: true, present: false },
     { id: '20', name: 'Kagiso', surname: 'Lekota', phone: '+27123456805', cellGroup: 'Worship Team', isFirstTimer: false, present: true },
-  ];
+  ]);
 
   // Filter attendees based on search term
   const filteredAttendees = mockAttendees.filter(attendee => {
@@ -118,14 +118,35 @@ export function Events() {
   };
 
   const toggleAttendance = (attendeeId: string) => {
-    // In a real app, this would update the database
-    console.log(`Toggling attendance for attendee ${attendeeId}`);
+    setMockAttendees(prevAttendees => 
+      prevAttendees.map(attendee => 
+        attendee.id === attendeeId 
+          ? { ...attendee, present: !attendee.present }
+          : attendee
+      )
+    );
     setShowQuickMenu(null);
   };
 
   const markAsAbsent = (attendeeId: string) => {
-    // In a real app, this would update the database
-    console.log(`Marking attendee ${attendeeId} as absent`);
+    setMockAttendees(prevAttendees => 
+      prevAttendees.map(attendee => 
+        attendee.id === attendeeId 
+          ? { ...attendee, present: false }
+          : attendee
+      )
+    );
+    setShowQuickMenu(null);
+  };
+
+  const markAsPresent = (attendeeId: string) => {
+    setMockAttendees(prevAttendees => 
+      prevAttendees.map(attendee => 
+        attendee.id === attendeeId 
+          ? { ...attendee, present: true }
+          : attendee
+      )
+    );
     setShowQuickMenu(null);
   };
 
@@ -134,6 +155,28 @@ export function Events() {
     console.log(`Editing attendee ${attendeeId}`);
     setShowQuickMenu(null);
   };
+
+  const addNewAttendee = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would submit to a backend
+    const form = e.target as HTMLFormElement;
+    const newAttendee = {
+      id: String(mockAttendees.length + 1),
+      name: (form.elements.namedItem('name') as HTMLInputElement).value,
+      surname: (form.elements.namedItem('surname') as HTMLInputElement).value,
+      phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+      cellGroup: (form.elements.namedItem('cellGroup') as HTMLSelectElement).value || null,
+      isFirstTimer: (form.elements.namedItem('firstTimer') as HTMLInputElement).checked,
+      present: true // New attendees are marked as present by default
+    };
+    
+    setMockAttendees(prev => [...prev, newAttendee]);
+    setShowAddAttendee(false);
+  };
+
+  // Calculate attendance statistics
+  const presentCount = mockAttendees.filter(a => a.present).length;
+  const absentCount = mockAttendees.length - presentCount;
 
   if (selectedEvent) {
     const event = events.find(e => e.id === selectedEvent);
@@ -179,6 +222,22 @@ export function Events() {
             </div>
           </div>
 
+          {/* Attendance Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-700">{presentCount}</div>
+              <div className="text-sm text-green-600">Present</div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-700">{absentCount}</div>
+              <div className="text-sm text-red-600">Absent</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-700">{mockAttendees.length}</div>
+              <div className="text-sm text-blue-600">Total</div>
+            </div>
+          </div>
+
           {/* Attendance Section */}
           <div className="border-t border-gray-200 pt-6">
             <div className="flex items-center justify-between mb-4">
@@ -194,9 +253,15 @@ export function Events() {
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add Attendee
                 </button>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Quick Mark
+                <button 
+                  onClick={() => {
+                    // Quick mark all as present
+                    setMockAttendees(prev => prev.map(a => ({ ...a, present: true })));
+                  }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Mark All Present
                 </button>
               </div>
             </div>
@@ -228,99 +293,102 @@ export function Events() {
                 </div>
               ) : (
                 filteredAttendees.map((attendee) => (
-                <div key={attendee.id} className="relative flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    {attendee.present ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
-                    )}
-                    <div>
-                      <p className="font-medium text-gray-900">{attendee.name} {attendee.surname}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>{attendee.phone}</span>
-                        <span>•</span>
-                        <span>{attendee.cellGroup || 'No cell group assigned'}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {attendee.isFirstTimer && (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                            First Timer
-                          </span>
+                  <div key={attendee.id} className="relative flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => toggleAttendance(attendee.id)}
+                        className="flex items-center space-x-3"
+                      >
+                        {attendee.present ? (
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
                         )}
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          attendee.present 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {attendee.present ? 'Present' : 'Absent'}
-                        </span>
+                      </button>
+                      <div>
+                        <p className="font-medium text-gray-900">{attendee.name} {attendee.surname}</p>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <span>{attendee.phone}</span>
+                          <span>•</span>
+                          <span>{attendee.cellGroup || 'No cell group assigned'}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          {attendee.isFirstTimer && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                              First Timer
+                            </span>
+                          )}
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            attendee.present 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {attendee.present ? 'Present' : 'Absent'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {attendee.isFirstTimer && (
+                    <div className="flex items-center space-x-2">
+                      {attendee.isFirstTimer && (
+                        <button 
+                          onClick={() => window.open(`tel:${attendee.phone}`)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center"
+                        >
+                          📞 Call
+                        </button>
+                      )}
                       <button 
-                        onClick={() => window.open(`tel:${attendee.phone}`)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center"
+                        onClick={() => setShowQuickMenu(showQuickMenu === attendee.id ? null : attendee.id)}
+                        className="text-gray-400 hover:text-gray-600 relative"
                       >
-                        📞 Call
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
                       </button>
-                    )}
-                    <button 
-                      onClick={() => setShowQuickMenu(showQuickMenu === attendee.id ? null : attendee.id)}
-                      className="text-gray-400 hover:text-gray-600 relative"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                      </svg>
-                    </button>
-                    
-                    {/* Quick Menu Dropdown */}
-                    {showQuickMenu === attendee.id && (
-                      <div className="absolute right-0 top-12 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                        <div className="py-1">
-                          <button
-                            onClick={() => toggleAttendance(attendee.id)}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            {attendee.present ? (
-                              <>
-                                <div className="w-4 h-4 rounded-full border-2 border-gray-400 mr-3"></div>
-                                Mark as Absent
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="w-4 h-4 text-green-600 mr-3" />
-                                Mark as Present
-                              </>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => editAttendee(attendee.id)}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit Details
-                          </button>
-                          {attendee.isFirstTimer && (
+                      
+                      {/* Quick Menu Dropdown */}
+                      {showQuickMenu === attendee.id && (
+                        <div className="absolute right-0 top-12 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                          <div className="py-1">
                             <button
-                              onClick={() => window.open(`tel:${attendee.phone}`)}
+                              onClick={() => markAsPresent(attendee.id)}
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              <CheckCircle className="w-4 h-4 text-green-600 mr-3" />
+                              Mark as Present
+                            </button>
+                            <button
+                              onClick={() => markAsAbsent(attendee.id)}
+                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              <div className="w-4 h-4 rounded-full border-2 border-gray-400 mr-3"></div>
+                              Mark as Absent
+                            </button>
+                            <button
+                              onClick={() => editAttendee(attendee.id)}
                               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
                               <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
-                              Call Now
+                              Edit Details
                             </button>
-                          )}
+                            {attendee.isFirstTimer && (
+                              <button
+                                onClick={() => window.open(`tel:${attendee.phone}`)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                Call Now
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
                 ))
               )}
             </div>
@@ -340,11 +408,13 @@ export function Events() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Attendee</h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={addNewAttendee}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                   <input
                     type="text"
+                    name="name"
+                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter first name"
                   />
@@ -353,6 +423,8 @@ export function Events() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Surname</label>
                   <input
                     type="text"
+                    name="surname"
+                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter surname"
                   />
@@ -361,13 +433,15 @@ export function Events() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                   <input
                     type="tel"
+                    name="phone"
+                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="+27123456789"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Cell Group</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <select name="cellGroup" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select Cell Group</option>
                     <option value="Leadership">Leadership</option>
                     <option value="Men Fellowship">Men Fellowship</option>
@@ -384,6 +458,7 @@ export function Events() {
                   <input
                     type="checkbox"
                     id="firstTimer"
+                    name="firstTimer"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="firstTimer" className="ml-2 block text-sm text-gray-900">
