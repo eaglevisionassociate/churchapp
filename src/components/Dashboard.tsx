@@ -1,6 +1,5 @@
 import React from 'react';
 import { Users, Calendar, CheckCircle, AlertTriangle, Phone, TrendingUp } from 'lucide-react';
-import { GrowthDashboard } from './GrowthDashboard';
 
 export function Dashboard() {
   // Mock data for dashboard
@@ -114,8 +113,6 @@ export function Dashboard() {
         })}
       </div>
 
-      <GrowthDashboard />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Activity */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -134,12 +131,12 @@ export function Dashboard() {
                     <div className={`p-2 rounded-lg ${
                       activity.type === 'alert' ? 'bg-red-100' :
                       activity.type === 'equipment' ? 'bg-green-100' :
-                      activity.type === 'call' ? 'bg-amber-100' : 'bg-blue-100'
+                      activity.type === 'call' ? 'bg-purple-100' : 'bg-blue-100'
                     }`}>
                       <Icon className={`w-4 h-4 ${
                         activity.type === 'alert' ? 'text-red-600' :
                         activity.type === 'equipment' ? 'text-green-600' :
-                        activity.type === 'call' ? 'text-amber-600' : 'text-blue-600'
+                        activity.type === 'call' ? 'text-purple-600' : 'text-blue-600'
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">
