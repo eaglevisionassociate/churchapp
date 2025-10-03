@@ -28,11 +28,15 @@ export function AttendanceList({ eventId, onClose }: AttendanceListProps) {
         supabase.from('attendances').select('*').eq('event_id', eventId)
       ]);
 
-      if (usersResponse.data) {
+      if (usersResponse.error) {
+        console.error('Error loading users:', usersResponse.error);
+      } else if (usersResponse.data) {
         setUsers(usersResponse.data);
       }
 
-      if (attendancesResponse.data) {
+      if (attendancesResponse.error) {
+        console.error('Error loading attendances:', attendancesResponse.error);
+      } else if (attendancesResponse.data) {
         const attendanceMap = new Map<string, Attendance>();
         attendancesResponse.data.forEach((att) => {
           if (att.user_id) {
