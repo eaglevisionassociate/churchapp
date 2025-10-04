@@ -1,4 +1,4 @@
-import { Church, Users, Calendar, Settings, BarChart3, UserCircle } from 'lucide-react';
+import { Church, Users, Calendar, Settings, BarChart3, CircleUser as UserCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
