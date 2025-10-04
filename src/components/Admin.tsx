@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { Users, Key, Shield, Settings, UserPlus, CreditCard as Edit, Trash2, Upload, Save } from 'lucide-react';
+import { Key, Shield, Settings, Upload, Save } from 'lucide-react';
 
 export function Admin() {
-  const [activeTab, setActiveTab] = useState('users');
-  const [showAddUser, setShowAddUser] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('permissions');
   const [churchInfo, setChurchInfo] = useState<{
     name: string;
     email: string;
@@ -24,14 +22,6 @@ export function Admin() {
     { id: '4', name: 'Zanele Khumalo', email: 'ushers.lead@cfcpretoriaeast.org', role: 'department_leader', pin: '2002', department: 'Ushers' },
     { id: '5', name: 'Mandla Mokoena', email: 'tech.lead@cfcpretoriaeast.org', role: 'department_leader', pin: '2003', department: 'Technicians' },
   ]);
-
-  const departments = [
-    { id: '1', name: 'Security', members: 8 },
-    { id: '2', name: 'Ushers', members: 12 },
-    { id: '3', name: 'Technicians', members: 15 },
-    { id: '4', name: 'Worship', members: 18 },
-    { id: '5', name: 'Children Ministry', members: 10 },
-  ];
 
   const permissions = {
     admin: ['View All Data', 'Edit All Data', 'Delete Records', 'Manage Users', 'System Settings', 'Generate Reports', 'Manage PINs', 'Department Access'],
@@ -59,52 +49,10 @@ export function Admin() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   };
 
-  const handleEditUser = (user: any) => {
-    setEditingUser({ ...user });
-  };
-
-  const handleSaveUser = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const updatedUser = {
-      ...editingUser,
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      role: formData.get('role') as string,
-      department: formData.get('department') as string || null,
-      pin: formData.get('pin') as string
-    };
-
-    setUsers(prev => prev.map(user => user.id === updatedUser.id ? updatedUser : user));
-    setEditingUser(null);
-  };
-
   const handleRegeneratePIN = (userId: string) => {
-    setUsers(prev => prev.map(user => 
+    setUsers(prev => prev.map(user =>
       user.id === userId ? { ...user, pin: generatePIN() } : user
     ));
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(prev => prev.filter(user => user.id !== userId));
-    }
-  };
-
-  const handleAddUser = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newUser = {
-      id: String(users.length + 1),
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      role: formData.get('role') as string,
-      department: formData.get('department') as string || null,
-      pin: generatePIN()
-    };
-    
-    setUsers(prev => [...prev, newUser]);
-    setShowAddUser(false);
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,9 +79,8 @@ export function Admin() {
   };
 
   const tabs = [
-    { id: 'users', label: 'User Management', icon: Users },
+    { id: 'permissions', label: 'Role Permissions', icon: Shield },
     { id: 'pins', label: 'PIN Management', icon: Key },
-    { id: 'permissions', label: 'Permissions', icon: Shield },
     { id: 'settings', label: 'System Settings', icon: Settings },
   ];
 
@@ -169,86 +116,7 @@ export function Admin() {
         </div>
 
         <div className="p-6">
-          {/* User Management Tab */}
-          {activeTab === 'users' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
-                <button
-                  onClick={() => setShowAddUser(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add User
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        User
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Department
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        PIN
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(user.role)}`}>
-                            {user.role.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {user.department || 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          {user.pin}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button 
-                              onClick={() => handleEditUser(user)}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* PIN Management Tab */}
+          {/* Permissions Tab */}
           {activeTab === 'pins' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900">PIN Management</h3>
@@ -287,20 +155,12 @@ export function Admin() {
                       </div>
                       <span className="text-lg font-mono font-bold text-blue-600">{user.pin}</span>
                     </div>
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => handleRegeneratePIN(user.id)}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        Regenerate PIN
-                      </button>
-                      <button 
-                        onClick={() => handleEditUser(user)}
-                        className="text-sm text-gray-600 hover:text-gray-800"
-                      >
-                        Edit User
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleRegeneratePIN(user.id)}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Regenerate PIN
+                    </button>
                   </div>
                 ))}
               </div>
@@ -466,174 +326,6 @@ export function Admin() {
           )}
         </div>
       </div>
-
-      {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit User</h3>
-            <form className="space-y-4" onSubmit={handleSaveUser}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={editingUser.name}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={editingUser.email}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <select 
-                  name="role" 
-                  defaultValue={editingUser.role}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="member">Member</option>
-                  <option value="event_leader">Event Leader</option>
-                  <option value="department_leader">Department Leader</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                <select 
-                  name="department" 
-                  defaultValue={editingUser.department || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.name}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">PIN</label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    name="pin"
-                    defaultValue={editingUser.pin}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    maxLength={4}
-                    pattern="[0-9]{4}"
-                    title="PIN must be 4 digits"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newPin = generatePIN();
-                      const pinInput = document.querySelector('input[name="pin"]') as HTMLInputElement;
-                      if (pinInput) pinInput.value = newPin;
-                    }}
-                    className="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    Generate
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add User Modal */}
-      {showAddUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New User</h3>
-            <form className="space-y-4" onSubmit={handleAddUser}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter full name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter email address"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <select 
-                  name="role" 
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="member">Member</option>
-                  <option value="event_leader">Event Leader</option>
-                  <option value="department_leader">Department Leader</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                <select 
-                  name="department"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.name}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowAddUser(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Add User
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

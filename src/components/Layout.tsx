@@ -1,4 +1,4 @@
-import { Church, Users, Calendar, Settings, BarChart3 } from 'lucide-react';
+import { Church, Users, Calendar, Settings, BarChart3, UserCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ export function Layout({ children, currentTab, onTabChange, userRole }: LayoutPr
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'departments', label: 'Departments', icon: Users },
+    { id: 'members', label: 'Members', icon: UserCircle },
     ...(userRole === 'admin' ? [{ id: 'admin', label: 'Admin', icon: Settings }] : []),
   ];
 
