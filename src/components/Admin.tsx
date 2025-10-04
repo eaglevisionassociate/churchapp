@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Users, Key, Shield, Settings, UserPlus, Edit, Trash2, Upload, Save } from 'lucide-react';
 
 export function Admin() {
   const [activeTab, setActiveTab] = useState('users');
   const [showAddUser, setShowAddUser] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [churchInfo, setChurchInfo] = useState({
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [churchInfo, setChurchInfo] = useState<{
+    name: string;
+    email: string;
+    logo: File | null;
+  }>({
     name: 'CFC Pretoria East',
     email: 'info@cfcpretoriaeast.org',
     logo: null
   });
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   // Mock users data
   const [users, setUsers] = useState([
@@ -55,47 +59,47 @@ export function Admin() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   };
 
-  const handleEditUser = (user) => {
+  const handleEditUser = (user: any) => {
     setEditingUser({ ...user });
   };
 
-  const handleSaveUser = (e) => {
+  const handleSaveUser = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     const updatedUser = {
       ...editingUser,
-      name: formData.get('name'),
-      email: formData.get('email'),
-      role: formData.get('role'),
-      department: formData.get('department') || null,
-      pin: formData.get('pin')
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      role: formData.get('role') as string,
+      department: formData.get('department') as string || null,
+      pin: formData.get('pin') as string
     };
 
     setUsers(prev => prev.map(user => user.id === updatedUser.id ? updatedUser : user));
     setEditingUser(null);
   };
 
-  const handleRegeneratePIN = (userId) => {
+  const handleRegeneratePIN = (userId: string) => {
     setUsers(prev => prev.map(user => 
       user.id === userId ? { ...user, pin: generatePIN() } : user
     ));
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       setUsers(prev => prev.filter(user => user.id !== userId));
     }
   };
 
-  const handleAddUser = (e) => {
+  const handleAddUser = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     const newUser = {
       id: String(users.length + 1),
-      name: formData.get('name'),
-      email: formData.get('email'),
-      role: formData.get('role'),
-      department: formData.get('department') || null,
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      role: formData.get('role') as string,
+      department: formData.get('department') as string || null,
       pin: generatePIN()
     };
     
@@ -103,24 +107,24 @@ export function Admin() {
     setShowAddUser(false);
   };
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setLogoPreview(e.target.result);
+        setLogoPreview(e.target?.result as string);
         setChurchInfo(prev => ({ ...prev, logo: file }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSaveChurchInfo = (e) => {
+  const handleSaveChurchInfo = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     setChurchInfo({
-      name: formData.get('churchName'),
-      email: formData.get('contactEmail'),
+      name: formData.get('churchName') as string,
+      email: formData.get('contactEmail') as string,
       logo: churchInfo.logo
     });
     alert('Church information updated successfully!');
@@ -531,7 +535,8 @@ export function Admin() {
                     type="button"
                     onClick={() => {
                       const newPin = generatePIN();
-                      document.querySelector('input[name="pin"]').value = newPin;
+                      const pinInput = document.querySelector('input[name="pin"]') as HTMLInputElement;
+                      if (pinInput) pinInput.value = newPin;
                     }}
                     className="bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
                   >

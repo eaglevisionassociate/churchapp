@@ -1,4 +1,3 @@
-import React from 'react';
 import { Church, Users, Calendar, Settings, BarChart3 } from 'lucide-react';
 
 interface LayoutProps {

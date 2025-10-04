@@ -1,4 +1,3 @@
-import React from 'react';
 import { Users, Calendar, CheckCircle, AlertTriangle, Phone, TrendingUp } from 'lucide-react';
 
 export function Dashboard() {

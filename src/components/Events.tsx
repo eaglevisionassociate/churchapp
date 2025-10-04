@@ -9,7 +9,7 @@ export function Events() {
   const [showQuickMenu, setShowQuickMenu] = useState<string | null>(null);
 
   // Mock events data
-  const [events, setEvents] = useState([
+  const [events] = useState([
     {
       id: '1',
       title: 'Sunday Morning Service',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Users, Shield, UserCheck, Wrench, Music, Baby, CheckCircle, AlertTriangle, Phone } from 'lucide-react';
 
 export function Departments() {
