@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Key, Shield, Settings, UserPlus, Edit, Trash2, Upload, Save } from 'lucide-react';
+import { Users, Key, Shield, Settings, UserPlus, CreditCard as Edit, Trash2, Upload, Save } from 'lucide-react';
 
 export function Admin() {
   const [activeTab, setActiveTab] = useState('users');
