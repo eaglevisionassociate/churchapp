@@ -1,5 +1,15 @@
+// Admin.tsx
 import { useState } from 'react';
-import { Key, Shield, Settings, Upload, Save } from 'lucide-react';
+import { Key, Shield, Settings, Upload, Save, Users } from 'lucide-react';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'department_leader' | 'event_leader' | 'member' | 'view_only';
+  pin: string;
+  department: string | null;
+}
 
 export function Admin() {
   const [activeTab, setActiveTab] = useState('permissions');
@@ -13,9 +23,10 @@ export function Admin() {
     logo: null
   });
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<User | null>(null);
 
-  // Mock users data
-  const [users, setUsers] = useState([
+  // Mock users data - consistent with Members component
+  const [users, setUsers] = useState<User[]>([
     { id: '1', name: 'Thabo Mthembu', email: 'admin1@cfcpretoriaeast.org', role: 'admin', pin: '1001', department: null },
     { id: '2', name: 'Nomsa Dlamini', email: 'admin2@cfcpretoriaeast.org', role: 'admin', pin: '1002', department: null },
     { id: '3', name: 'Sipho Ndlovu', email: 'security.lead@cfcpretoriaeast.org', role: 'department_leader', pin: '2001', department: 'Security' },
@@ -27,7 +38,8 @@ export function Admin() {
     admin: ['View All Data', 'Edit All Data', 'Delete Records', 'Manage Users', 'System Settings', 'Generate Reports', 'Manage PINs', 'Department Access'],
     department_leader: ['View Department Data', 'Edit Attendance', 'Manage Checklists', 'View Reports', 'Call First-Timers'],
     event_leader: ['Create Events', 'Mark Attendance', 'View Event Data', 'Generate Event Reports'],
-    member: ['View Own Data', 'Update Profile']
+    member: ['View Own Data', 'Update Profile'],
+    view_only: ['View Public Data', 'View Events', 'View Dashboard']
   };
 
   const getRoleColor = (role: string) => {
@@ -40,6 +52,8 @@ export function Admin() {
         return 'bg-green-100 text-green-800';
       case 'member':
         return 'bg-gray-100 text-gray-800';
+      case 'view_only':
+        return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -52,6 +66,12 @@ export function Admin() {
   const handleRegeneratePIN = (userId: string) => {
     setUsers(prev => prev.map(user =>
       user.id === userId ? { ...user, pin: generatePIN() } : user
+    ));
+  };
+
+  const handleRoleChange = (userId: string, newRole: User['role']) => {
+    setUsers(prev => prev.map(user =>
+      user.id === userId ? { ...user, role: newRole } : user
     ));
   };
 
@@ -82,6 +102,7 @@ export function Admin() {
     { id: 'permissions', label: 'Role Permissions', icon: Shield },
     { id: 'pins', label: 'PIN Management', icon: Key },
     { id: 'settings', label: 'System Settings', icon: Settings },
+    { id: 'members', label: 'Member Roles', icon: Users },
   ];
 
   return (
@@ -116,7 +137,99 @@ export function Admin() {
         </div>
 
         <div className="p-6">
-          {/* Permissions Tab */}
+          {/* Member Roles Tab - NEW */}
+          {activeTab === 'members' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900">Manage Member Roles & Permissions</h3>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Member Selection */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900">Select Member</h4>
+                  <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {users.map((user) => (
+                      <div
+                        key={user.id}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedMember?.id === user.id
+                            ? 'bg-blue-100 border border-blue-300'
+                            : 'bg-white border border-gray-200 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSelectedMember(user)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-gray-900">{user.name}</p>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            {user.department && (
+                              <p className="text-sm text-gray-500">{user.department}</p>
+                            )}
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                            {user.role.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Role Assignment */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900">Assign Role & Permissions</h4>
+                  {selectedMember ? (
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="mb-4">
+                        <h5 className="font-medium text-gray-900 mb-2">Current Role: {selectedMember.role.replace('_', ' ')}</h5>
+                        <select
+                          value={selectedMember.role}
+                          onChange={(e) => handleRoleChange(selectedMember.id, e.target.value as User['role'])}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="department_leader">Department Leader</option>
+                          <option value="event_leader">Event Leader</option>
+                          <option value="member">Member</option>
+                          <option value="view_only">View Only</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <h5 className="font-medium text-gray-900 mb-2">Permissions</h5>
+                        <div className="space-y-2">
+                          {permissions[selectedMember.role]?.map((permission, index) => (
+                            <div key={index} className="flex items-center">
+                              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                              <span className="text-sm text-gray-700">{permission}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">PIN: {selectedMember.pin}</span>
+                          <button
+                            onClick={() => handleRegeneratePIN(selectedMember.id)}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            Regenerate PIN
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">Select a member to assign roles and permissions</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PIN Management Tab */}
           {activeTab === 'pins' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900">PIN Management</h3>
